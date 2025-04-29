@@ -9,7 +9,6 @@ jobs:
 
     env:
       ANDROID_SDK_ROOT: $HOME/.buildozer/android/platform/android-sdk
-      CMDLINE_TOOLS_BIN: $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/tools/bin
 
     steps:
     - name: Checkout code
@@ -27,23 +26,20 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython
 
-    - name: Install Android SDK Command Line Tools (Fixed structure)
+    - name: Install Android SDK Command Line Tools (Fixed folder name)
       run: |
         mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         cd $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip -d tools
-        rm tools.zip
-
-    - name: Accept Android SDK licenses & install Build Tools
-      run: |
-        export PATH=$CMDLINE_TOOLS_BIN:$PATH
+        unzip tools.zip
+        mv cmdline-tools latest  # <== fix penting
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
     - name: Build APK
       run: |
-        export PATH=$CMDLINE_TOOLS_BIN:$PATH
+        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
         buildozer android debug
 
     - name: Upload APK
