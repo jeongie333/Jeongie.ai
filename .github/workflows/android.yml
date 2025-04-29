@@ -1,4 +1,4 @@
-name: Build with Buildozer
+name: Build with Jeongie AI
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.14
+        python-version: 3.11
 
     - name: Install dependencies
       run: |
