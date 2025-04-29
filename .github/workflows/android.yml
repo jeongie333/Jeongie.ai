@@ -1,4 +1,4 @@
-name: Build with Jeongie AI
+name: Build Jeongie APK
 
 on:
   workflow_dispatch:
@@ -26,15 +26,17 @@ jobs:
         pip install --upgrade pip
         pip install buildozer cython
 
-    - name: Install Android SDK Command Line Tools (Fixed folder name)
+    - name: Install Android SDK Command Line Tools (with fix)
       run: |
         mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         cd $ANDROID_SDK_ROOT/cmdline-tools
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip
-        mv cmdline-tools latest  # <== fix penting
+        echo "Downloading command line tools..."
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip || { echo "Download failed"; exit 1; }
+        unzip tools.zip -d temp || { echo "Unzip failed"; exit 1; }
+        mv temp/cmdline-tools latest || { echo "Folder rename failed"; exit 1; }
+        ls -R $ANDROID_SDK_ROOT/cmdline-tools
         export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-        sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
+        yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
     - name: Build APK
