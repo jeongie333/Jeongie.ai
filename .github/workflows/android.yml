@@ -34,27 +34,28 @@ jobs:
     - name: Download Android SDK Command Line Tools
       run: |
         cd $ANDROID_SDK_ROOT/cmdline-tools
-        echo "Downloading command line tools..."
-        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip -d temp
-        mv temp/cmdline-tools latest
+        wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline.zip
+        unzip cmdline.zip -d cmdline-tools-temp
+        mkdir -p latest
+        mv cmdline-tools-temp/cmdline-tools/* latest/
         echo "CMD Tools content:"
         ls -R $ANDROID_SDK_ROOT/cmdline-tools
 
-    - name: Check sdkmanager existence
+    - name: Set PATH and verify sdkmanager
       run: |
-        if [ ! -f "$CMDLINE_TOOLS/bin/sdkmanager" ]; then
-          echo "sdkmanager not found!"
+        export PATH=$CMDLINE_TOOLS/bin:$PATH
+        if ! command -v sdkmanager > /dev/null; then
+          echo "sdkmanager NOT FOUND!"
           exit 2
         fi
-        echo "sdkmanager FOUND at $CMDLINE_TOOLS/bin"
+        echo "sdkmanager found at $(which sdkmanager)"
 
     - name: Accept Licenses
       run: |
         export PATH=$CMDLINE_TOOLS/bin:$PATH
         yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
 
-    - name: Install Android SDK packages
+    - name: Install SDK Packages
       run: |
         export PATH=$CMDLINE_TOOLS/bin:$PATH
         sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-34" "build-tools;34.0.0"
