@@ -1,0 +1,2 @@
+BOT_NAME = "Jeongie"
+USER_NAME = "STAR"
