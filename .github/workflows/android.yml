@@ -7,6 +7,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_SDK_ROOT: /opt/android-sdk
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -19,27 +22,23 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y python3-pip python3-setuptools python3-wheel python3-virtualenv git zip unzip openjdk-17-jdk
+        sudo apt install -y python3-pip python3-setuptools python3-wheel python3-virtualenv git zip unzip openjdk-17-jdk wget
         pip install --upgrade pip
         pip install buildozer cython
 
-    - name: Accept Android SDK licenses & install Build Tools
+    - name: Install Android SDK Command Line Tools
       run: |
-        yes | sdkmanager --licenses || true
-        mkdir -p ~/.android
-        echo "### User Agreements" > ~/.android/repositories.cfg
-        yes | buildozer android debug || true  # agar dia bikin folder .buildozer
-
-        # Install AIDL manually if needed
-        export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-        mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
+        sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
         cd $ANDROID_SDK_ROOT/cmdline-tools
         wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
-        unzip tools.zip -d latest
+        unzip tools.zip -d cmdline-tools
         rm tools.zip
+        echo "export PATH=$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/bin:$PATH" >> $GITHUB_ENV
 
-        export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-        sdkmanager "build-tools;34.0.0" "platform-tools" "platforms;android-34"
+    - name: Accept Android SDK licenses & install Build Tools
+      run: |
+        yes | $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/bin/sdkmanager --licenses
+        $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
     - name: Build APK
       run: |
